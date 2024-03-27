@@ -1,0 +1,78 @@
+# FermiHDI Network Foundation Platform
+# FermiHDI Limited
+# No License
+# Copyright (c) 2024
+
+version: "3.8"
+
+services:
+  router-a:
+    image: frr:base
+    build: ./
+    hostname: router-a
+    container_name: router-a
+    volumes:
+      - ./config_files/router_a.conf:/etc/frr/frr.conf
+      - ./config_files/daemons.conf:/etc/frr/daemons
+      - ./config_files/pmacctd.conf:/etc/pmacct/pmacctd.conf
+      - ./config_files/pmacctd.interfaces.map:/etc/pmacct/pmacctd.interfaces.map
+      - ./config_files/docker-start.sh:/usr/lib/frr/docker-start
+      - /lib/modules:/lib/modules
+    init: false
+    privileged: true
+    networks:
+      router-transit:
+        ipv4_address: 10.140.0.100
+      router-a-load:
+        ipv4_address: 10.140.10.2
+      outside:
+  router-b:
+    image: frr:base
+    build: ./
+    hostname: router-b
+    container_name: router-b
+    volumes:
+      - ./config_files/router_b.conf:/etc/frr/frr.conf
+      - ./config_files/daemons.conf:/etc/frr/daemons
+      - ./config_files/pmacctd.conf:/etc/pmacct/pmacctd.conf
+      - ./config_files/pmacctd.interfaces.map:/etc/pmacct/pmacctd.interfaces.map
+      - ./config_files/docker-start.sh:/usr/lib/frr/docker-start
+      - /lib/modules:/lib/modules
+    init: false
+    privileged: true
+    networks:
+      router-transit:
+        ipv4_address: 10.140.0.101
+      router-b-load:
+        ipv4_address: 10.140.20.2
+      router-b-services:
+        ipv4_address: 10.140.30.2
+      outside:
+
+networks:
+  router-transit:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.0.0/24
+  router-a-load:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.10.0/24
+          gateway: 10.140.10.2
+  router-b-load:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.20.0/24
+          gateway: 10.140.20.2
+  router-b-services:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.30.0/24
+          gateway: 10.140.30.2
+  managment:
+    external: true
+  outside: {}

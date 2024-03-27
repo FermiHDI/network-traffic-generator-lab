@@ -1,0 +1,3 @@
+ifindex=1 ifname=eth1 direction=in
+ifindex=2 ifname=eth2 direction=in
+ifindex=3 ifname=eth3 direction=in

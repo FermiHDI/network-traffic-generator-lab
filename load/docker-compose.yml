@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  load-master:
+    image: locust
+    build: ./load
+    ports:
+      - "9089:8089"
+      - "5557:5557"
+    volumes:
+      - ./load/locust-master.conf:/usr/src/app/
+      - ./load/locustfile.py:/usr/src/app/
+    command: --config locust-master.conf --host http://webapp:3000
+    depends_on:
+      - webapp
+      - router-a
+      - router-b
+    networks:
+      outside:
+    cap_add:
+      - NET_ADMIN
+  load-worker:
+    image: locust
+    build: ./load
+    deploy:
+      replicas: 4
+    volumes:
+      - ./load/locust-worker.conf:/usr/src/app/
+      - ./load/locustfile.py:/usr/src/app/
+    command: --config locust-worker.conf --master-host load-master
+    depends_on:
+      - load-master
+    networks:
+      outside:
+    cap_add:
+      - NET_ADMIN
+
+networks:
+  outside:
