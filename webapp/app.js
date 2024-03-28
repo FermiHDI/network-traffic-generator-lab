@@ -16,7 +16,6 @@ let redisServer = 'redis'
 
 let redisUpdated = false;
 
-console.log(`command line arguments: ${process.argv}`);
 for (let i = 2; i < process.argv.length; i++) {
   if (process.argv[i] === '--redis') {
     redisServer = process.argv[i + 1];
@@ -30,8 +29,9 @@ if (!redisUpdated) {
 
 // Build server
 const fastify = Fastify({
-  logger: true,
-  pluginTimeout: 30000
+  "logger": true,
+  "pluginTimeout": 30000,
+  "disableRequestLogging": true
 });
 fastify.register(fastlyStatic, {
   root: path.join(__dirname, 'public'),
@@ -48,7 +48,7 @@ fastify.get('/', (request, reply) => {
     if (err) {
       request.log.error(err);
     } else {
-      request.log.info(`Redis get test_key: ${val}`);
+      // request.log.info(`Redis get test_key: ${val}`);
     }
   });
   reply.sendFile('index.html');
