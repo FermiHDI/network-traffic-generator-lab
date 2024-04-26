@@ -1,7 +1,9 @@
 FROM redis
-COPY docker-start.sh /usr/local/bin/docker-start.sh
+COPY --chmod=711 docker-start.sh /docker-start.sh
 USER root
 RUN apt-get update && \
-  apt-get install -y iproute2
-ENTRYPOINT [ "/usr/local/bin/docker-start.sh" ]
-# ENTRYPOINT [ "/bin/bash" ]
+  apt-get install -y \
+  iproute2 \
+  iputils-ping \
+  dnsutils
+ENTRYPOINT [ "/docker-start.sh" ]
