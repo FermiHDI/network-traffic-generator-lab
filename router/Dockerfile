@@ -250,6 +250,7 @@ COPY "./daemons.conf" "/etc/frr/daemons"
 COPY "./router-a.conf" "/etc/frr/frr.conf"
 COPY "./pmacctd.conf" "/etc/pmacct/pmacctd.conf"
 COPY "./pmacctd.interfaces.map" "/etc/pmacct/pmacctd.interfaces.map"
+COPY "./networks_file" "/etc/pmacct/networks_file"
 COPY "./GeoLite2-City.mmdb" "/etc/geoip.db"
 RUN echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf && \
   rm /lib/x86_64-linux-gnu/libyang.so.2 && \
@@ -260,6 +261,7 @@ RUN echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf && \
   chmod +x /usr/lib/frr/frrcommon.sh && \
   chmod +x /lib/lsb/init-functions && \
   ldconfig -n /usr/lib/frr/modules
+HEALTHCHECK CMD vtysh -c "show watchfrr" || exit 1
 ENTRYPOINT ["/docker-start.sh"]
 
 FROM ubuntu:22.04 AS pmacct
@@ -274,6 +276,7 @@ RUN apt-get update && \
     wget \
     tcpdump \
     nano \
+    default-jre \
     libjson-c-dev \
     libsqlite3-dev \
     libnuma-dev \
@@ -295,6 +298,7 @@ COPY --from=build-pmacct "/usr/local/sbin/" "/usr/local/sbin/"
 COPY --from=build-pmacct "/usr/local/lib/" "/usr/local/lib"
 COPY --chmod=711 "./docker-start-nfacctd.sh" "/docker-start.sh"
 COPY "./nfacctd.conf" "/etc/pmacct/nfacctd.conf"
+COPY "./networks_file" "/etc/pmacct/networks_file"
 COPY "./GeoLite2-City.mmdb" "/etc/geoip.db"
 RUN ldconfig
 ENTRYPOINT ["/docker-start.sh"]

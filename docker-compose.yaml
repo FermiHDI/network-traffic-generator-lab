@@ -16,6 +16,7 @@ services:
       - ./router/daemons.conf:/etc/frr/daemons
       - ./router/pmacctd.conf:/etc/pmacct/pmacctd.conf
       - ./router/pmacctd.interfaces.map:/etc/pmacct/pmacctd.interfaces.map
+      - ./router/networks_file_a:/etc/pmacct/networks_file
       - /lib/modules:/lib/modules
     init: false
     privileged: true
@@ -27,6 +28,7 @@ services:
       a_load:
         ipv4_address: 10.140.110.2
       telemetry:
+        ipv4_address: 10.143.0.2
   router_b:
     image: fermihdi:lab-router
     build:
@@ -38,6 +40,7 @@ services:
       - ./router/daemons.conf:/etc/frr/daemons
       - ./router/pmacctd.conf:/etc/pmacct/pmacctd.conf
       - ./router/pmacctd.interfaces.map:/etc/pmacct/pmacctd.interfaces.map
+      - ./router/networks_file_b:/etc/pmacct/networks_file
       - /lib/modules:/lib/modules
     init: false
     privileged: true
@@ -47,7 +50,7 @@ services:
       b_load:
         ipv4_address: 10.140.120.2
       telemetry:
-      outside:
+        ipv4_address: 10.143.0.3
   router_c:
     image: fermihdi:lab-router
     build:
@@ -59,6 +62,7 @@ services:
       - ./router/daemons.conf:/etc/frr/daemons
       - ./router/pmacctd.conf:/etc/pmacct/pmacctd.conf
       - ./router/pmacctd.interfaces.map:/etc/pmacct/pmacctd.interfaces.map
+      - ./router/networks_file_c:/etc/pmacct/networks_file
       - /lib/modules:/lib/modules
     init: false
     privileged: true
@@ -70,7 +74,7 @@ services:
       c_load2:
         ipv4_address: 10.140.140.2
       telemetry:
-      outside:
+        ipv4_address: 10.143.0.4
   test_a:
     image: fermihdi:test-point
     build: ./test-points
@@ -79,7 +83,9 @@ services:
         ipv4_address: 10.140.110.100
     cap_add:
       - NET_ADMIN
-    command: ["10.140.0.0/16", "10.140.110.2"]
+    environment:
+      LAB_ROUTE: "10.140.0.0/16"
+      LAB_ROUTE_VIA: "10.140.110.2"
   test_b:
     image: fermihdi:test-point
     build: ./test-points
@@ -88,7 +94,9 @@ services:
         ipv4_address: 10.140.120.100
     cap_add:
       - NET_ADMIN
-    command: ["10.140.0.0/16", "10.140.120.2"]
+    environment:
+      LAB_ROUTE: "10.140.0.0/16"
+      LAB_ROUTE_VIA: "10.140.120.2"
   test_c1:
     image: fermihdi:test-point
     build: ./test-points
@@ -97,7 +105,9 @@ services:
         ipv4_address: 10.140.130.100
     cap_add:
       - NET_ADMIN
-    command: ["10.140.0.0/16", "10.140.130.2"]
+    environment:
+      LAB_ROUTE: "10.140.0.0/16"
+      LAB_ROUTE_VIA: "10.140.130.2"
   test_c2:
     image: fermihdi:test-point
     build: ./test-points
@@ -106,12 +116,16 @@ services:
         ipv4_address: 10.140.140.100
     cap_add:
       - NET_ADMIN
-    command: ["10.140.0.0/16", "10.140.140.2"]
+    environment:
+      LAB_ROUTE: "10.140.0.0/16"
+      LAB_ROUTE_VIA: "10.140.140.2"
   webapp:
     image: fermihdi:lab-webapp
-    build:
-      context: ./webapp
-    command: ["10.140.0.0/16", "10.140.130.2", "-- --redis 10.140.140.10"]
+    build: ./webapp
+    environment:
+      LAB_ROUTE: "10.140.0.0/16"
+      LAB_ROUTE_VIA: "10.140.130.2"
+    command: ["--", "--redis", "10.140.140.10"]
     ports:
       - 3000:3000
     networks:
@@ -132,7 +146,9 @@ services:
         ipv4_address: 10.140.140.10
     cap_add:
       - NET_ADMIN
-    command: ["10.140.0.0/16", "10.140.140.2"]
+    environment:
+      LAB_ROUTE: "10.140.0.0/16"
+      LAB_ROUTE_VIA: "10.140.140.2"
   load_master:
     image: fermihdi:locust
     build: ./load
@@ -157,7 +173,10 @@ services:
       outside:
     cap_add:
       - NET_ADMIN
-    command: ["10.140.0.0/16", "10.140.110.2", "--host http://10.140.130.10:3000"]
+    environment:
+      LAB_ROUTE: "10.140.0.0/16"
+      LAB_ROUTE_VIA: "10.140.110.2"
+    command: ["--host", "http://10.140.130.10:3000"]
   load_a:
     image: fermihdi:locust
     build: ./load
@@ -171,7 +190,10 @@ services:
       outside:
     cap_add:
       - NET_ADMIN
-    command: ["10.140.0.0/16", "10.140.110.2", "--master-host 10.140.110.20"]
+    environment:
+      LAB_ROUTE: "10.140.0.0/16"
+      LAB_ROUTE_VIA: "10.140.110.2"
+    command: ["--master-host", "10.140.110.20"]
     restart: unless-stopped
     deploy:
       replicas: 4
@@ -188,7 +210,10 @@ services:
       outside:
     cap_add:
       - NET_ADMIN
-    command: ["10.140.0.0/16", "10.140.120.2", "--master-host 10.140.110.20"]
+    environment:
+      LAB_ROUTE: "10.140.0.0/16"
+      LAB_ROUTE_VIA: "10.140.120.2"
+    command: ["--master-host", "10.140.110.20"]
     restart: unless-stopped
     deploy:
       replicas: 4
@@ -230,9 +255,9 @@ services:
     networks:
       kafka:
         ipv4_address: 10.145.0.10
-      kafka-producers:
+      kafka_producers:
         ipv4_address: 10.145.10.10
-      kafka-consumers:
+      kafka_consumers:
         ipv4_address: 10.145.20.10
   postgres:
     image: postgres:14
@@ -288,13 +313,17 @@ services:
       target: pmacct
     volumes:
       - ./router/nfacctd.conf:/etc/pmacct/nfacctd.conf
+      - ./router/networks_file:/etc/pmacct/networks_file
       - ./router/GeoLite2-City.mmdb:/etc/geoip.db
       - ./router/docker-start-nfacctd.sh:/docker-start.sh
+    environment:
+      KAFKA_SERVER: "10.145.10.10"
+    privileged: true
     depends_on:
       - kafka
     networks:
       kafka:
-      kafka-producers:
+      kafka_producers:
       telemetry:
         ipv4_address: 10.143.0.10
 
@@ -344,19 +373,23 @@ networks:
       driver: default
       config:
         - subnet: 10.143.0.0/24
+          gateway: 10.143.0.1
   kafka:
     ipam:
       driver: default
       config:
         - subnet: 10.145.0.0/24
-  kafka-producers:
+          gateway: 10.145.0.1
+  kafka_producers:
     ipam:
       driver: default
       config:
         - subnet: 10.145.10.0/24
-  kafka-consumers:
+          gateway: 10.145.10.1
+  kafka_consumers:
     ipam:
       driver: default
       config:
         - subnet: 10.145.20.0/24
+          gateway: 10.145.20.1
   outside: {}

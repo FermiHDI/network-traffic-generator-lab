@@ -7,7 +7,8 @@ RUN apt-get update && \
     dnsutils \
     mtr \
     curl \
-    wget && \
+    wget \
+    default-jre && \
   cd /tmp && \
   curl -fsSLo kafka.tgz https://dlcdn.apache.org/kafka/3.7.0/kafka_2.13-3.7.0.tgz && \
   tar -xzf kafka.tgz && \

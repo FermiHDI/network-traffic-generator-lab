@@ -18,4 +18,4 @@ else
 fi
 
 source /usr/lib/frr/frrcommon.sh
-/usr/lib/frr/watchfrr $(daemon_list) --limit-fds 100000
+/usr/lib/frr/watchfrr --limit-fds 100000 $(daemon_list)

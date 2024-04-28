@@ -1,6 +1,6 @@
 #!/bin/sh
 echo "Adding Test Routes"
-ip route add $1 via $2
+ip route add $LAB_ROUTE via $LAB_ROUTE_VIA
 
 echo "Starting Redis"
-redis-server $3
+redis-server $@
