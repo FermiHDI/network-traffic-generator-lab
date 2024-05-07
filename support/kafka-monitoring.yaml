@@ -1,0 +1,68 @@
+# FermiHDI Limited
+# No License
+# Copyright (c) 2024
+
+services:
+  postgres:
+    image: postgres:14
+    hostname: postgresql
+    environment:
+      POSTGRES_DB: "conduktor-console"
+      POSTGRES_USER: "conduktor"
+      POSTGRES_PASSWORD: "change_me"
+      POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
+    networks:
+      kafka:
+        ipv4_address: 10.145.0.112
+  kafka_console:
+    image: conduktor/conduktor-console:1.21.0
+    ports:
+      - "9080:8080"
+    environment:
+      CDK_ORGANIZATION_NAME: "Network Traffic Lab"
+      CDK_DATABASE_URL: "postgresql://conduktor:change_me@10.145.0.112:5432/conduktor-console"
+      CDK_MONITORING_CORTEX-URL: "http://10.145.0.115:9009/"
+      CDK_MONITORING_ALERT-MANAGER-URL: "http://10.145.0.115:9010/"
+      CDK_MONITORING_CALLBACK-URL: "http://10.145.0.115:8080/monitoring/api/"
+      CDK_MONITORING_NOTIFICATIONS-CALLBACK-URL: "http://localhost:8080"
+      CDK_ADMIN_EMAIL: "admin@demo.com"
+      CDK_ADMIN_PASSWORD: "admin"
+      CDK_CLUSTERS_0_ID: 'network-traffic-lab-pkc'
+      CDK_CLUSTERS_0_NAME: 'Network Traffic Lab'
+      CDK_CLUSTERS_0_BOOTSTRAPSERVERS: '10.145.0.10:9092'
+    depends_on:
+      - postgres
+    networks:
+      kafka:
+        ipv4_address: 10.145.0.114
+      default:
+  kafka_monitoring:
+    image: conduktor/conduktor-console-cortex:1.21.0
+    environment:
+      CDK_CONSOLE-URL: "http://10.145.0.114:8080"
+    depends_on:
+      - kafka_console
+    networks:
+      kafka:
+        ipv4_address: 10.145.0.115
+
+networks:
+  kafka:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.145.0.0/24
+          gateway: 10.145.0.1
+  kafka_producers:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.145.10.0/24
+          gateway: 10.145.10.1
+  kafka_consumers:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.145.20.0/24
+          gateway: 10.145.20.1
+  default: {}

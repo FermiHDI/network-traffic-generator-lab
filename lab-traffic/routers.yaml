@@ -1,0 +1,190 @@
+# FermiHDI Network Foundation Platform
+# FermiHDI Limited
+# No License
+# Copyright (c) 2024
+
+services:
+  router_a:
+    image: fermihdi:lab-router
+    build:
+      context: ./router
+      target: router
+    hostname: router-a
+    volumes:
+      - ./router/router-a.conf:/etc/frr/frr.conf
+      - ./router/daemons.conf:/etc/frr/daemons
+      - ./router/pmacctd.conf:/etc/pmacct/pmacctd.conf
+      - ./router/pmacctd.interfaces.map:/etc/pmacct/pmacctd.interfaces.map
+      - ./router/networks_file_a:/etc/pmacct/networks_file
+      - /lib/modules:/lib/modules
+    init: false
+    privileged: true
+    networks:
+      a_b_transit:
+        ipv4_address: 10.140.0.2
+      a_c_transit:
+        ipv4_address: 10.140.10.2
+      a_load:
+        ipv4_address: 10.140.110.2
+      telemetry:
+        ipv4_address: 10.143.0.2
+    depends_on:
+      - ipfix_collector
+  router_b:
+    image: fermihdi:lab-router
+    build:
+      context: ./router
+      target: router
+    hostname: router-b
+    volumes:
+      - ./router/router-b.conf:/etc/frr/frr.conf
+      - ./router/daemons.conf:/etc/frr/daemons
+      - ./router/pmacctd.conf:/etc/pmacct/pmacctd.conf
+      - ./router/pmacctd.interfaces.map:/etc/pmacct/pmacctd.interfaces.map
+      - ./router/networks_file_b:/etc/pmacct/networks_file
+      - /lib/modules:/lib/modules
+    init: false
+    privileged: true
+    networks:
+      a_b_transit:
+        ipv4_address: 10.140.0.3
+      b_load:
+        ipv4_address: 10.140.120.2
+      telemetry:
+        ipv4_address: 10.143.0.3
+    depends_on:
+      - ipfix_collector
+  router_c:
+    image: fermihdi:lab-router
+    build:
+      context: ./router
+      target: router
+    hostname: router-c
+    volumes:
+      - ./router/router-c.conf:/etc/frr/frr.conf
+      - ./router/daemons.conf:/etc/frr/daemons
+      - ./router/pmacctd.conf:/etc/pmacct/pmacctd.conf
+      - ./router/pmacctd.interfaces.map:/etc/pmacct/pmacctd.interfaces.map
+      - ./router/networks_file_c:/etc/pmacct/networks_file
+      - /lib/modules:/lib/modules
+    init: false
+    privileged: true
+    networks:
+      a_c_transit:
+        ipv4_address: 10.140.10.3
+      c_load1:
+        ipv4_address: 10.140.130.2
+      c_load2:
+        ipv4_address: 10.140.140.2
+      telemetry:
+        ipv4_address: 10.143.0.4
+    depends_on:
+      - ipfix_collector
+  ipfix_collector:
+    image: fermihdi:pmacct
+    build:
+      context: ./router
+      target: pmacct
+    volumes:
+      - ./router/nfacctd.conf:/etc/pmacct/nfacctd.conf
+      - ./router/networks_file:/etc/pmacct/networks_file
+      - ./router/GeoLite2-City.mmdb:/etc/geoip.db
+      - ./router/docker-start-nfacctd.sh:/docker-start.sh
+    environment:
+      KAFKA_SERVER: "10.145.0.10"
+    privileged: true
+    depends_on:
+      - kafka
+    networks:
+      kafka:
+      telemetry:
+        ipv4_address: 10.143.0.10
+  zoo:
+    image: confluentinc/cp-zookeeper:7.6.0
+    hostname: zoo
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_SERVERS: zoo:2888:3888
+    networks:
+      kafka:
+        ipv4_address: 10.145.0.11
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    hostname: kafka
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+      - "9999:9999"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://10.145.0.10:9092,DOCKER://host.docker.internal:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zoo:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
+    depends_on:
+      - zoo
+    networks:
+      kafka:
+        ipv4_address: 10.145.0.10
+
+networks:
+  a_b_transit:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.0.0/24
+          gateway: 10.140.0.1
+  a_c_transit:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.10.0/24
+          gateway: 10.140.10.1
+  a_load:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.110.0/24
+          gateway: 10.140.110.1
+  b_load:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.120.0/24
+          gateway: 10.140.120.1
+  c_load1:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.130.0/24
+          gateway: 10.140.130.1
+  c_load2:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.140.0/24
+          gateway: 10.140.140.1
+  telemetry:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.143.0.0/24
+          gateway: 10.143.0.1
+  kafka:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.145.0.0/24
+          gateway: 10.145.0.1
+  default: {}

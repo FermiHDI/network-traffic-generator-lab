@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  webapp:
+    image: webapp
+    build: ./
+    container_name: webapp
+    command: ["--redis", "redis"]
+    ports:
+      - 3000:3000
+    networks:
+      outside:
+    depends_on:
+      - redis
+  redis:
+    image: redis
+    container_name: redis
+    networks:
+      outside:
+
+networks:
+  outside:

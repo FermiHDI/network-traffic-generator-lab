@@ -1,0 +1,128 @@
+# FermiHDI Network Foundation Platform
+# FermiHDI Limited
+# No License
+# Copyright (c) 2024
+
+x-logging:
+  &default-logging
+  driver: fluentd
+  options:
+    fluentd-address: "127.0.0.1:24224"
+    tag: "{{.Name}}_docker.{{.ID}}"
+
+services:
+  router_a:
+    logging: *default-logging
+    depends_on:
+      - ipfix_collector
+  router_b:
+    logging: *default-logging
+    depends_on:
+      - ipfix_collector
+  router_c:
+    logging: *default-logging
+    depends_on:
+      - ipfix_collector
+  ipfix_collector:
+    logging: *default-logging
+    depends_on:
+      - kafka
+  zoo:
+    logging: *default-logging
+  kafka:
+    logging: *default-logging
+    depends_on:
+      - zoo
+
+  webapp:
+    logging: *default-logging
+    depends_on:
+      - redis
+  redis:
+    logging: *default-logging
+    depends_on:
+    - router_a
+    - router_b
+    - router_c
+  load_master:
+    logging: *default-logging
+    depends_on:
+      - webapp
+  load_a:
+    logging: *default-logging
+    depends_on:
+      - load_master
+  load_b:
+    logging: *default-logging
+    depends_on:
+      - load_master
+
+  postgres:
+    logging: *default-logging
+  kafka_console:
+    logging: *default-logging
+    depends_on:
+      - postgres
+      - kafka
+  kafka_monitoring:
+    logging: *default-logging
+    depends_on:
+      - kafka_console
+
+networks:
+  a_b_transit:
+    ipam:
+      config:
+        - subnet: 10.140.0.0/24
+          gateway: 10.140.0.1
+          ip_range: 10.140.0.128/25
+
+  a_c_transit:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.10.0/24
+          gateway: 10.140.10.1
+          ip_range: 10.140.10.128/25
+  a_load:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.110.0/24
+          gateway: 10.140.110.1
+          ip_range: 10.140.110.128/25
+  b_load:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.120.0/24
+          gateway: 10.140.120.1
+          ip_range: 10.140.120.128/25
+  c_load1:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.130.0/24
+          gateway: 10.140.130.1
+          ip_range: 10.140.130.128/25
+  c_load2:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.140.0/24
+          gateway: 10.140.140.1
+          ip_range: 10.140.140.128/25
+  telemetry:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.143.0.0/24
+          gateway: 10.143.0.1
+          ip_range: 10.143.0.128/25
+  kafka:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.145.0.0/24
+          gateway: 10.145.0.1
+          ip_range: 10.145.0.128/25

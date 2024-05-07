@@ -1,0 +1,122 @@
+# FermiHDI Network Foundation Platform
+# FermiHDI Limited
+# No License
+# Copyright (c) 2024
+
+services:
+  webapp:
+    image: fermihdi:lab-webapp
+    build: ./webapp
+    environment:
+      LAB_ROUTE: "10.140.0.0/16"
+      LAB_ROUTE_VIA: "10.140.130.2"
+    command: ["--", "--redis", "10.140.140.10"]
+    ports:
+      - 3000:3000
+    networks:
+      c_load1:
+        ipv4_address: 10.140.130.10
+      default:
+    cap_add:
+      - NET_ADMIN
+    depends_on:
+      - redis
+  redis:
+    image: fermihdi:redis
+    build: ./redis
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      c_load2:
+        ipv4_address: 10.140.140.10
+    cap_add:
+      - NET_ADMIN
+    environment:
+      LAB_ROUTE: "10.140.0.0/16"
+      LAB_ROUTE_VIA: "10.140.140.2"
+  load_master:
+    image: fermihdi:locust
+    build: ./load
+    ports:
+      - "9089:8089"
+      - "5557:5557"
+    volumes:
+      - ./load/locust-master.conf:/usr/src/app/locust.conf
+      - ./load/locustfile.py:/usr/src/app/locustfile.py
+    depends_on:
+      - webapp
+    networks:
+      a_load:
+        ipv4_address: 10.140.110.20
+      default:
+    cap_add:
+      - NET_ADMIN
+    environment:
+      LAB_ROUTE: "10.140.0.0/16"
+      LAB_ROUTE_VIA: "10.140.110.2"
+    command: ["--host", "http://10.140.130.10:3000"]
+  load_a:
+    image: fermihdi:locust
+    build: ./load
+    volumes:
+      - ./load/locust-worker.conf:/usr/src/app/locust.conf
+      - ./load/locustfile.py:/usr/src/app/locustfile.py
+    depends_on:
+      - load_master
+    networks:
+      a_load:
+    cap_add:
+      - NET_ADMIN
+    environment:
+      LAB_ROUTE: "10.140.0.0/16"
+      LAB_ROUTE_VIA: "10.140.110.2"
+    command: ["--master-host", "10.140.110.20"]
+    restart: unless-stopped
+    deploy:
+      replicas: 4
+  load_b:
+    image: fermihdi:locust
+    build: ./load
+    volumes:
+      - ./load/locust-worker.conf:/usr/src/app/locust.conf
+      - ./load/locustfile.py:/usr/src/app/locustfile.py
+    depends_on:
+      - load_master
+    networks:
+      b_load:
+    cap_add:
+      - NET_ADMIN
+    environment:
+      LAB_ROUTE: "10.140.0.0/16"
+      LAB_ROUTE_VIA: "10.140.120.2"
+    command: ["--master-host", "10.140.110.20"]
+    restart: unless-stopped
+    deploy:
+      replicas: 4
+
+networks:
+  a_load:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.110.0/24
+          gateway: 10.140.110.1
+  b_load:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.120.0/24
+          gateway: 10.140.120.1
+  c_load1:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.130.0/24
+          gateway: 10.140.130.1
+  c_load2:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.140.140.0/24
+          gateway: 10.140.140.1
+  default: {}
