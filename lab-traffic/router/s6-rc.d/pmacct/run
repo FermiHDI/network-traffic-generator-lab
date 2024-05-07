@@ -1,0 +1,4 @@
+#!/command/execlineb -s0
+backtick -n LD_LIBRARY_PATH { printcontenv LD_LIBRARY_PATH }
+define LD_LIBRARY_PATH /usr/local/lib:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+/usr/local/sbin/pmacctd -f /etc/pmacct/pmacctd.conf

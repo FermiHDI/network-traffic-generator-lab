@@ -1,0 +1,3 @@
+#!/command/execlineb -s0
+export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib/x86_64-linux-gnu
+/usr/lib/frr/watchfrr zebra mgmtd staticd $@
