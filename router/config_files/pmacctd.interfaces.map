@@ -1,3 +1,0 @@
-ifindex=1 ifname=eth1 direction=out
-ifindex=2 ifname=eth2 direction=out
-ifindex=3 ifname=eth3 direction=out

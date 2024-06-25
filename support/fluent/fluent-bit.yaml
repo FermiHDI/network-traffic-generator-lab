@@ -1,0 +1,29 @@
+---
+service:
+    flush: 1
+    log_level: info
+    http_server: On
+    http_listen: 0.0.0.0
+    http_port: 2020
+    health_check: On
+    hc_errors_count: 5
+    hc_retry_failure_count: 5
+    hc_period: 5
+
+pipeline:
+  inputs:
+    - name: node_exporter_metrics
+      tag: host_metrics
+      path.procfs: /host/proc
+      path.sysfs: /host/sys
+    - name: docker_events
+      tag: host_fh_beta_docker_events
+    - name: docker
+      tag: host_metrics_fh_beta_docker
+    - name: forward
+  outputs:
+    - name: stdout
+      match: "fh_beta-*"
+      format: json_lines
+    - name: prometheus_exporter
+      match: "host_metrics_*"

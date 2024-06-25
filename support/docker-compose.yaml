@@ -1,0 +1,22 @@
+# FermiHDI Limited
+# No License
+# Copyright (c) 2024
+
+services:
+  fluent_bit:
+    image: cr.fluentbit.io/fluent/fluent-bit:3.0.3
+    volumes:
+      - /proc:/host/proc
+      - /sys:/host/sys
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./fluent/fluent-bit.yaml:/fluent-bit/etc/fluent-bit.yaml
+    ports:
+      - "2020:2020"
+      - "2021:2021"
+      - "24224:24224"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "1"
+    command: ["-c", "/fluent-bit/etc/fluent-bit.yaml"]

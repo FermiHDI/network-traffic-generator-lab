@@ -1,0 +1,10 @@
+# FermiHDI Network Foundation Platform
+# FermiHDI Limited
+# No License
+# Copyright (c) 2024
+
+name: fh_beta2
+include:
+  - lab-traffic/routers.yaml
+  - lab-traffic/traffic.yaml
+  - support/kafka-monitoring.yaml
