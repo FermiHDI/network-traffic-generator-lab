@@ -343,5 +343,5 @@ RUN touch /etc/frr/vtysh.conf && \
     mkdir -p /var/run/s6/container_environment && \
     echo $LD_LIBRARY_PATH > /var/run/s6/container_environment/LD_LIBRARY_PATH
 HEALTHCHECK CMD vtysh -c "show watchfrr" || exit 1
-# ENTRYPOINT ["/init", "/usr/lib/frr/watchfrr", "zebra", "mgmtd", "staticd"]
-# CMD ["bgpd"]
+ENTRYPOINT ["/init", "/usr/lib/frr/watchfrr", "zebra", "mgmtd", "staticd"]
+CMD ["bgpd"]
