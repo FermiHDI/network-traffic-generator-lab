@@ -1,7 +1,9 @@
-#!/usr/bin/env python
+#!/usr/local/bin/python
+# The shebang for the Standard Offical Python 3.12 docker image
 
 from os import getenv
-from kafka import KafkaConsumer, KafkaProducer, KafkaAdminClient
+from kafka import KafkaConsumer, KafkaProducer
+from kafka.admin import KafkaAdminClient, NewTopic
 from json import loads, dumps
 from socket import inet_aton
 from struct import unpack
@@ -26,29 +28,41 @@ if __name__ == "__main__":
     # Check input kafka cluser for topic
     try:
       print(f"Checking if input topic {input_topic} exists")
-      client = KafkaAdminClient(bootstrap_servers=["kafka:9092"])
-      connected = True
-      topics = client.topic_partitions
-      if input_topic not in topics:
-        print(f"Input topic {input_topic} not foud, creating it")
-        client.create_topics(new_topics=[input_topic], timeout_ms=5000)
+      consumer = KafkaConsumer(input_topic,
+                                group_id=input_group,
+                                bootstrap_servers=[input_bootstrap],
+                                consumer_timeout_ms=120000)
+      existing_topics = consumer.topics()
+      if input_topic not in existing_topics:
+        print(f"Creating input topic {input_topic}")
+        admin_client = KafkaAdminClient(bootstrap_servers=[input_bootstrap])
+        create_topics(new_topics=topic_list, validate_only=False)
+        new_topics = [NewTopic(name=input_topic, num_partitions=1, replication_factor=1)]
+        admin_client.create_topics(new_topics=new_topics, validate_only=False)
       else:
         print(f"Input topic {input_topic} found")
+      connected = True
 
       # Check output kafka cluser for topic
       print(f"Checking if output topic {output_topic} exists")
-      client = KafkaAdminClient(bootstrap_servers=["kafka:9092"])
-      connected = True
-      topics = client.topic_partitions
-      if output_topic not in topics:
-        print(f"Output topic {output_topic} not foud, creating it")
-        client.create_topics(new_topics=[output_topic], timeout_ms=5000)
+      consumer = KafkaConsumer(output_topic,
+                                group_id=output_group,
+                                bootstrap_servers=[output_bootstrap],
+                                consumer_timeout_ms=120000)
+      existing_topics = consumer.topics()
+      if output_topic not in existing_topics:
+        print(f"Creating output topic {output_topic}")
+        admin_client = KafkaAdminClient(bootstrap_servers=[output_bootstrap])
+        create_topics(new_topics=topic_list, validate_only=False)
+        new_topics = [NewTopic(name=output_topic, num_partitions=1, replication_factor=1)]
+        admin_client.create_topics(new_topics=new_topics, validate_only=False)
       else:
         print(f"Output topic {output_topic} found")
-    except Exception:
-      print("Error")
+      connected = True
+    except Exception as e:
+      print(f"Error: {e}")
       connected = False
-    
+
     if connected:
       break
     sleep (5)
@@ -58,7 +72,7 @@ if __name__ == "__main__":
                             group_id=input_group,
                             bootstrap_servers=[input_bootstrap],
                             consumer_timeout_ms=120000)
-  
+
   count = 0
 
   print(f"Starting flow enrichment from {input_topic} and writing to {output_topic}")
@@ -91,5 +105,5 @@ if __name__ == "__main__":
 
     if count % 10 == 0:
       print(f"Message {count} sent")
-  
+
   print(f"Exiting with {count} messages sent")
