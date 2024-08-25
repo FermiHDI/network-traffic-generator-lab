@@ -11,4 +11,4 @@ RUN apt update -y && \
 
 ADD --chmod=0777 flow_enrichment.py .
 
-CMD ["python", "./flow_enrichment.py"]
+CMD ["python", "-u", "./flow_enrichment.py"]
