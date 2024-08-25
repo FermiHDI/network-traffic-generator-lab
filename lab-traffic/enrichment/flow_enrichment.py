@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from os import getenv
-from kafka import KafkaConsumer, KafkaProducer, KafkaError
+from kafka import KafkaConsumer, KafkaProducer
 from json import loads, dumps
 from socket import inet_aton
 from struct import unpack
