@@ -14,6 +14,7 @@ if __name__ == "__main__":
   input_topic = getenv("KAFKA_INPUT_TOPIC", "ipflow_raw")
   output_topic = getenv("KAFKA_OUTPUT_TOPIC", "ipflow")
   input_group = getenv("KAFKA_INPUT_GROUP", "to_enrich")
+  output_group = getenv("KAFKA_INPUT_GROUP", "enriched")
   input_bootstrap_server = getenv("KAFKA_INPUT_BOOTSTRAP_SERVER", "kafka")
   output_bootstrap_server = getenv("KAFKA_OUTPUT_BOOTSTRAP_SERVER", "kafka")
   input_bootstrap_port = getenv("KAFKA_INPUT_BOOTSTRAP_PORT", "9092")
@@ -36,7 +37,6 @@ if __name__ == "__main__":
       if input_topic not in existing_topics:
         print(f"Creating input topic {input_topic}")
         admin_client = KafkaAdminClient(bootstrap_servers=[input_bootstrap])
-        create_topics(new_topics=topic_list, validate_only=False)
         new_topics = [NewTopic(name=input_topic, num_partitions=1, replication_factor=1)]
         admin_client.create_topics(new_topics=new_topics, validate_only=False)
       else:
@@ -53,7 +53,6 @@ if __name__ == "__main__":
       if output_topic not in existing_topics:
         print(f"Creating output topic {output_topic}")
         admin_client = KafkaAdminClient(bootstrap_servers=[output_bootstrap])
-        create_topics(new_topics=topic_list, validate_only=False)
         new_topics = [NewTopic(name=output_topic, num_partitions=1, replication_factor=1)]
         admin_client.create_topics(new_topics=new_topics, validate_only=False)
       else:
