@@ -2,8 +2,8 @@
 # The shebang for the Standard Offical Python 3.12 docker image
 
 from os import getenv
-from kafka import KafkaConsumer, KafkaProducer
-from kafka.admin import KafkaAdminClient, NewTopic
+from kafka import KafkaConsumer, KafkaProducer, KafkaAdminClient
+from kafka.admin import NewTopic
 from json import loads, dumps
 from socket import inet_aton
 from struct import unpack
