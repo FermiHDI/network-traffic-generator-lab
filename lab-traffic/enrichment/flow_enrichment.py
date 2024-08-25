@@ -21,7 +21,7 @@ if __name__ == "__main__":
   print(f"output_bootstrap {output_bootstrap}")
 
   # Check input kafka cluser for topic
-  client = KafkaAdminClient(bootstrap_servers=["kafka:9092"])
+  client = KafkaAdminClient("kafka:9092")
   topics = client.topic_partitions
   print(f"Checking if input topic {input_topic} exists")
   if input_topic not in topics:
