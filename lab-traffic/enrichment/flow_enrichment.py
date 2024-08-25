@@ -17,8 +17,8 @@ if __name__ == "__main__":
   input_bootstrap = input_bootstrap_server + ":" + input_bootstrap_port
   output_bootstrap = output_bootstrap_server + ":" + output_bootstrap_port
 
-  print(f"{input_bootstrap}")
-  print(f"{output_bootstrap}")
+  print(f"input_bootstrap {input_bootstrap}")
+  print(f"output_bootstrap {output_bootstrap}")
 
   # Check input kafka cluser for topic
   client = KafkaAdminClient(bootstrap_servers=[input_bootstrap])
