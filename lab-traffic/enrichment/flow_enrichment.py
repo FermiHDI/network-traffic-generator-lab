@@ -6,7 +6,7 @@ from json import loads, dumps
 from socket import inet_aton
 from struct import unpack
 
-from time import sleep
+from time import sleep, time
 
 if __name__ == "__main__":
   input_topic = getenv("KAFKA_INPUT_TOPIC", "ipflow_raw")
@@ -19,28 +19,39 @@ if __name__ == "__main__":
   input_bootstrap = input_bootstrap_server + ":" + input_bootstrap_port
   output_bootstrap = output_bootstrap_server + ":" + output_bootstrap_port
 
-  # Check input kafka cluser for topic
-  try:
-    print(f"Checking if input topic {input_topic} exists")
-    client = KafkaAdminClient(bootstrap_servers=["kafka:9092"])
-    topics = client.topic_partitions
-    if input_topic not in topics:
-      print(f"Input topic {input_topic} not foud, creating it")
-      client.create_topics(new_topics=[input_topic], timeout_ms=5000)
-    else:
-      print(f"Input topic {input_topic} found")
+  timeout = time() + 300  # 5 Mins
+  while time() < timeout:
+    print("Checking Kafka broker")
+    connected = False
+    # Check input kafka cluser for topic
+    try:
+      print(f"Checking if input topic {input_topic} exists")
+      client = KafkaAdminClient(bootstrap_servers=["kafka:9092"])
+      connected = True
+      topics = client.topic_partitions
+      if input_topic not in topics:
+        print(f"Input topic {input_topic} not foud, creating it")
+        client.create_topics(new_topics=[input_topic], timeout_ms=5000)
+      else:
+        print(f"Input topic {input_topic} found")
 
-    # Check output kafka cluser for topic
-    print(f"Checking if output topic {output_topic} exists")
-    client = KafkaAdminClient(bootstrap_servers=["kafka:9092"])
-    topics = client.topic_partitions
-    if output_topic not in topics:
-      print(f"Output topic {output_topic} not foud, creating it")
-      client.create_topics(new_topics=[output_topic], timeout_ms=5000)
-    else:
-      print(f"Output topic {output_topic} found")
-  except Exception:
-    print("Error")
+      # Check output kafka cluser for topic
+      print(f"Checking if output topic {output_topic} exists")
+      client = KafkaAdminClient(bootstrap_servers=["kafka:9092"])
+      connected = True
+      topics = client.topic_partitions
+      if output_topic not in topics:
+        print(f"Output topic {output_topic} not foud, creating it")
+        client.create_topics(new_topics=[output_topic], timeout_ms=5000)
+      else:
+        print(f"Output topic {output_topic} found")
+    except Exception:
+      print("Error")
+      connected = False
+    
+    if connected:
+      break
+    sleep (5)
 
   producer = KafkaProducer(bootstrap_servers=[output_bootstrap])
   consumer = KafkaConsumer(input_topic,
