@@ -10,8 +10,8 @@ if __name__ == "__main__":
   input_topic = getenv("KAFKA_INPUT_TOPIC", "ipflow_raw")
   output_topic = getenv("KAFKA_OUTPUT_TOPIC", "ipflow")
   input_group = getenv("KAFKA_INPUT_GROUP", "to_enrich")
-  input_bootstrap_server = getenv("KAFKA_INPUT_BOOTSTRAP_SERVER", "10.145.0.10")
-  output_bootstrap_server = getenv("KAFKA_OUTPUT_BOOTSTRAP_SERVER", "10.145.0.10")
+  input_bootstrap_server = getenv("KAFKA_INPUT_BOOTSTRAP_SERVER", "kafka")
+  output_bootstrap_server = getenv("KAFKA_OUTPUT_BOOTSTRAP_SERVER", "kafka")
   input_bootstrap_port = getenv("KAFKA_INPUT_BOOTSTRAP_PORT", "9092")
   output_bootstrap_port = getenv("KAFKA_OUTPUT_BOOTSTRAP_PORT", "9092")
   input_bootstrap = input_bootstrap_server + ":" + input_bootstrap_port
