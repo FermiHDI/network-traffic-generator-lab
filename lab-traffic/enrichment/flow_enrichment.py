@@ -6,6 +6,8 @@ from json import loads, dumps
 from socket import inet_aton
 from struct import unpack
 
+from time import sleep
+
 if __name__ == "__main__":
   input_topic = getenv("KAFKA_INPUT_TOPIC", "ipflow_raw")
   output_topic = getenv("KAFKA_OUTPUT_TOPIC", "ipflow")
@@ -19,6 +21,8 @@ if __name__ == "__main__":
 
   print(f"input_bootstrap {input_bootstrap}")
   print(f"output_bootstrap {output_bootstrap}")
+
+  sleep(60)
 
   # Check input kafka cluser for topic
   client = KafkaAdminClient(bootstrap_servers=["kafka:9092"], client_id='test')
