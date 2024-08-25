@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from os import getenv
-from kafka import KafkaConsumer, KafkaProducer
+from kafka import KafkaConsumer, KafkaProducer, KafkaAdminClient
 from json import loads, dumps
 from socket import inet_aton
 from struct import unpack
@@ -16,6 +16,26 @@ if __name__ == "__main__":
   output_bootstrap_port = getenv("KAFKA_OUTPUT_BOOTSTRAP_PORT", "9092")
   input_bootstrap = input_bootstrap_server + ":" + input_bootstrap_port
   output_bootstrap = output_bootstrap_server + ":" + output_bootstrap_port
+
+  # Check input kafka cluser for topic
+  client = KafkaAdminClient(bootstrap_servers=[input_bootstrap])
+  topics = client.topic_partitions
+  print(f"Checking if input topic {input_topic} exists")
+  if input_topic not in topics:
+    print(f"Input topic {input_topic} not foud, creating it")
+    client.create_topics(new_topics=[input_topic], timeout_ms=5000)
+  else:
+    print(f"Input topic {input_topic} found")
+
+  # Check output kafka cluser for topic
+  client = KafkaAdminClient(bootstrap_servers=[output_bootstrap])
+  topics = client.topic_partitions
+  print(f"Checking if output topic {output_topic} exists")
+  if output_topic not in topics:
+    print(f"Output topic {output_topic} not foud, creating it")
+    client.create_topics(new_topics=[output_topic], timeout_ms=5000)
+  else:
+    print(f"Output topic {output_topic} found")
 
   producer = KafkaProducer(bootstrap_servers=[output_bootstrap])
   consumer = KafkaConsumer(input_topic,
