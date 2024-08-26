@@ -45,10 +45,7 @@ if __name__ == "__main__":
 
       # Check output kafka cluser for topic
       print(f"Checking if output topic {output_topic} exists")
-      producer = KafkaProducer(output_topic,
-                                group_id=output_group,
-                                bootstrap_servers=[output_bootstrap],
-                                consumer_timeout_ms=120000)
+      producer = KafkaProducer(bootstrap_servers=[output_bootstrap])
       existing_topics = consumer.topics()
       if output_topic not in existing_topics:
         print(f"Creating output topic {output_topic}")
@@ -66,18 +63,18 @@ if __name__ == "__main__":
       break
     sleep (5)
 
-  producer = KafkaProducer(bootstrap_servers=[output_bootstrap])
-  consumer = KafkaConsumer(input_topic,
-                            group_id=input_group,
-                            bootstrap_servers=[input_bootstrap],
-                            consumer_timeout_ms=120000)
-
   count = 0
 
   print(f"Starting flow enrichment from {input_topic} and writing to {output_topic}")
 
   for message in consumer:
     rx_msg = loads(message.value.decode("utf-8"))
+
+    port_num = 0
+    if rx_msg["ip_proto"] == "tcp":
+      port_num = 6
+    else if rx_msg["ip_proto"] == "udp":
+      port_num = 17
 
     tx_msg = {
       "peer_ip_src": unpack("!L", inet_aton(str(rx_msg["peer_ip_src"])))[0],
@@ -90,7 +87,7 @@ if __name__ == "__main__":
       "port_src": int(rx_msg["port_src"]),
       "port_dst": int(rx_msg["port_dst"]),
       "tcp_flags": int(rx_msg["tcp_flags"]),
-      "ip_proto": int(rx_msg["ip_proto"]),
+      "ip_proto": port_num,
       "tos": int(rx_msg["tos"]),
       "sampling_rate": int(rx_msg["sampling_rate"]),
       "packets": int(rx_msg["packets"]),
