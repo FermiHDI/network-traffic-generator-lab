@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
       # Check output kafka cluser for topic
       print(f"Checking if output topic {output_topic} exists")
-      consumer = KafkaConsumer(output_topic,
+      producer = KafkaProducer(output_topic,
                                 group_id=output_group,
                                 bootstrap_servers=[output_bootstrap],
                                 consumer_timeout_ms=120000)
