@@ -73,7 +73,7 @@ if __name__ == "__main__":
     port_num = 0
     if rx_msg["ip_proto"] == "tcp":
       port_num = 6
-    else if rx_msg["ip_proto"] == "udp":
+    elif rx_msg["ip_proto"] == "udp":
       port_num = 17
 
     tx_msg = {
