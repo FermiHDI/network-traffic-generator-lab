@@ -29,10 +29,9 @@ if __name__ == "__main__":
     # Check input kafka cluser for topic
     try:
       print(f"Checking if input topic {input_topic} exists")
-      consumer = KafkaConsumer(input_topic,
-                                group_id=input_group,
-                                bootstrap_servers=[input_bootstrap],
-                                consumer_timeout_ms=120000)
+      consumer = KafkaConsumer(bootstrap_servers=[input_bootstrap],
+                               auto_offset_reset='earliest',
+                               consumer_timeout_ms=120000)
       existing_topics = consumer.topics()
       if input_topic not in existing_topics:
         print(f"Creating input topic {input_topic}")
@@ -65,10 +64,16 @@ if __name__ == "__main__":
 
   count = 0
 
+  consumer.subscribe([input_topic])
+
+  print(f"Input Topic {input_toipc} Connected: {consumer.bootstrap_connected()}")
+  print(f"Output Topic {output_toipc} Connected: {producer.bootstrap_connected()}")
   print(f"Starting flow enrichment from {input_topic} and writing to {output_topic}")
 
   for message in consumer:
     rx_msg = loads(message.value.decode("utf-8"))
+
+    print(rx_msg)
 
     port_num = 0
     if rx_msg["ip_proto"] == "tcp":
@@ -99,7 +104,11 @@ if __name__ == "__main__":
 
     count += 1
 
-    if count % 10 == 0:
+    if count % 1000 == 0:
       print(f"Message {count} sent")
+      print(f"Input Kafka Metrics: {consumer.metrics()}")
+      print(f"Output Kafka Metrics: {producer.metrics()}")
 
+  consumer.close()
+  producer.close()
   print(f"Exiting with {count} messages sent")
