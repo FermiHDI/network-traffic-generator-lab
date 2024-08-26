@@ -33,6 +33,8 @@ services:
     depends_on:
       - zoo
   enrichment:
-    image: enrichment
+    image: docker.fermihdi.dev/hd-beta/enrichment
+    build:
+      context: .
     depends_on:
       - kafka
