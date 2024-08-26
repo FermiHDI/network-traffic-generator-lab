@@ -66,20 +66,20 @@ if __name__ == "__main__":
 
   consumer.subscribe([input_topic])
 
-  print(f"Input Topic {input_toipc} Connected: {consumer.bootstrap_connected()}")
-  print(f"Output Topic {output_toipc} Connected: {producer.bootstrap_connected()}")
+  print(f"Input Topic {input_topic} Connected: {consumer.bootstrap_connected()}")
+  print(f"Output Topic {output_topic} Connected: {producer.bootstrap_connected()}")
   print(f"Starting flow enrichment from {input_topic} and writing to {output_topic}")
 
   for message in consumer:
     rx_msg = loads(message.value.decode("utf-8"))
-
-    print(rx_msg)
 
     port_num = 0
     if rx_msg["ip_proto"] == "tcp":
       port_num = 6
     elif rx_msg["ip_proto"] == "udp":
       port_num = 17
+
+    timestamp = int(rx_msg["timestamp_start"].split(".")[0])
 
     tx_msg = {
       "peer_ip_src": unpack("!L", inet_aton(str(rx_msg["peer_ip_src"])))[0],
@@ -97,14 +97,14 @@ if __name__ == "__main__":
       "sampling_rate": int(rx_msg["sampling_rate"]),
       "packets": int(rx_msg["packets"]),
       "bytes": int(rx_msg["bytes"]),
-      "timestamp": int(rx_msg["timestamp_start"])
+      "timestamp": timestamp
     }
 
     producer.send(output_topic, value=dumps(tx_msg).encode("utf-8"))
 
     count += 1
 
-    if count % 1000 == 0:
+    if count % 100000 == 0:
       print(f"Message {count} sent")
       print(f"Input Kafka Metrics: {consumer.metrics()}")
       print(f"Output Kafka Metrics: {producer.metrics()}")
