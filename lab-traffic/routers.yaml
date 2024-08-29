@@ -93,10 +93,10 @@ services:
     depends_on:
       - ipfix_collector
   ipfix_collector:
-    image: docker.fermihdi.dev/hd-beta/flow-collector
+    image: docker.fermihdi.dev/hd-beta/flow-collector:ubuntu
     build:
       context: ./router
-      target: pmacct
+      target: pmacct-ubuntu
     volumes:
       - ./router/nfacctd.conf:/etc/pmacct/nfacctd.conf
       - ./router/networks_file:/etc/pmacct/networks_file
