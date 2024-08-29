@@ -22,7 +22,7 @@ if __name__ == "__main__":
   input_bootstrap = input_bootstrap_server + ":" + input_bootstrap_port
   output_bootstrap = output_bootstrap_server + ":" + output_bootstrap_port
 
-  timeout = time() + 300  # 5 Mins
+  timeout = time() + 600  # 5 Mins
   while time() < timeout:
     print("Checking Kafka broker")
     connected = False
@@ -30,8 +30,7 @@ if __name__ == "__main__":
     try:
       print(f"Checking if input topic {input_topic} exists")
       consumer = KafkaConsumer(bootstrap_servers=[input_bootstrap],
-                               auto_offset_reset='earliest',
-                               consumer_timeout_ms=120000)
+                               auto_offset_reset='earliest')
       existing_topics = consumer.topics()
       if input_topic not in existing_topics:
         print(f"Creating input topic {input_topic}")
@@ -70,44 +69,45 @@ if __name__ == "__main__":
   print(f"Output Topic {output_topic} Connected: {producer.bootstrap_connected()}")
   print(f"Starting flow enrichment from {input_topic} and writing to {output_topic}")
 
-  for message in consumer:
-    rx_msg = loads(message.value.decode("utf-8"))
+  while True:
+    for message in consumer:
+      rx_msg = loads(message.value.decode("utf-8"))
 
-    port_num = 0
-    if rx_msg["ip_proto"] == "tcp":
-      port_num = 6
-    elif rx_msg["ip_proto"] == "udp":
-      port_num = 17
+      port_num = 0
+      if rx_msg["ip_proto"] == "tcp":
+        port_num = 6
+      elif rx_msg["ip_proto"] == "udp":
+        port_num = 17
 
-    timestamp = int(rx_msg["timestamp_start"].split(".")[0])
+      timestamp = int(rx_msg["timestamp_start"].split(".")[0])
 
-    tx_msg = {
-      "peer_ip_src": unpack("!L", inet_aton(str(rx_msg["peer_ip_src"])))[0],
-      "iface_in": int(rx_msg["iface_in"]),
-      "iface_out": int(rx_msg["iface_out"]),
-      "as_src": int(rx_msg["as_src"]),
-      "as_dst": int(rx_msg["as_dst"]),
-      "ip_src": unpack("!L", inet_aton(str(rx_msg["ip_src"])))[0],
-      "ip_dst": unpack("!L", inet_aton(str(rx_msg["ip_dst"])))[0],
-      "port_src": int(rx_msg["port_src"]),
-      "port_dst": int(rx_msg["port_dst"]),
-      "tcp_flags": int(rx_msg["tcp_flags"]),
-      "ip_proto": port_num,
-      "tos": int(rx_msg["tos"]),
-      "sampling_rate": int(rx_msg["sampling_rate"]),
-      "packets": int(rx_msg["packets"]),
-      "bytes": int(rx_msg["bytes"]),
-      "timestamp": timestamp
-    }
+      tx_msg = {
+        "peer_ip_src": unpack("!L", inet_aton(str(rx_msg["peer_ip_src"])))[0],
+        "iface_in": int(rx_msg["iface_in"]),
+        "iface_out": int(rx_msg["iface_out"]),
+        "as_src": int(rx_msg["as_src"]),
+        "as_dst": int(rx_msg["as_dst"]),
+        "ip_src": unpack("!L", inet_aton(str(rx_msg["ip_src"])))[0],
+        "ip_dst": unpack("!L", inet_aton(str(rx_msg["ip_dst"])))[0],
+        "port_src": int(rx_msg["port_src"]),
+        "port_dst": int(rx_msg["port_dst"]),
+        "tcp_flags": int(rx_msg["tcp_flags"]),
+        "ip_proto": port_num,
+        "tos": int(rx_msg["tos"]),
+        "sampling_rate": int(rx_msg["sampling_rate"]),
+        "packets": int(rx_msg["packets"]),
+        "bytes": int(rx_msg["bytes"]),
+        "timestamp": timestamp
+      }
 
-    producer.send(output_topic, value=dumps(tx_msg).encode("utf-8"))
+      producer.send(output_topic, value=dumps(tx_msg).encode("utf-8"))
 
-    count += 1
+      count += 1
 
-    if count % 100000 == 0:
-      print(f"Message {count} sent")
-      print(f"Input Kafka Metrics: {consumer.metrics()}")
-      print(f"Output Kafka Metrics: {producer.metrics()}")
+      if count % 100000 == 0:
+        print(f"Message {count} sent")
+        print(f"Input Kafka Metrics: {consumer.metrics()}")
+        print(f"Output Kafka Metrics: {producer.metrics()}")
 
   consumer.close()
   producer.close()
