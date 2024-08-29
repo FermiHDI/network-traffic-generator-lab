@@ -1,0 +1,21 @@
+#!/bin/bash
+
+TOPIC=${TOPIC:=ipflow}
+BROKER=${BROKER:=localhost:9092}
+
+echo "Testing if Kafka is running and target topic ${TOPIC} exists"
+
+/bin/kafka-topics --bootstrap-server ${BROKER} --topic ${TOPIC} --describe > /dev/null 2>&1
+if [[ "${?}" -eq 0 ]]; then
+  echo "Kafka running with target topic"
+  exit 0
+fi
+
+/bin/kafka-topics --bootstrap-server ${BROKER} --if-not-exists --create --partitions 1 --topic ${TOPIC} > /dev/null 2>&1
+if [[ "${?}" -eq 0 ]]; then 
+  echo "Kafka was running and the target topic was created"
+  exit 0
+fi
+
+echo "Kafka is not running or topic could not be created"
+exit 1

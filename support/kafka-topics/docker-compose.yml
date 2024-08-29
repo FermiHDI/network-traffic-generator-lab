@@ -1,0 +1,6 @@
+services:
+  make-kafka-topic:
+    image: docker.fermihdi.dev/hd-beta/make-kafka-topic
+    build:
+      context: .
+
