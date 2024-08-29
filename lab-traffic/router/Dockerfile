@@ -42,7 +42,7 @@ RUN apt-get update && \
     libbpf-dev \
     libc-ares-dev && \
   cd /tmp && \
-  /bin/sh -c "$(curl -fsSL https://github.com/network-analytics/mdt-dialout-collector/raw/main/install.sh)" -- -l -v current && \
+  /bin/sh -c "$(curl -fsSL https://github.com/network-analytics/mdt-dialout-collector/raw/main/install.sh)" -- -l -v "v1.1.4" && \
   cd /tmp && \
   git clone -b 4.6-stable https://github.com/ntop/nDPI.git && \
   git clone -b 1.7.9 --depth 1 https://github.com/pmacct/pmacct.git && \
