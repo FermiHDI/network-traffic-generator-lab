@@ -5,7 +5,7 @@
 
 services:
   webapp:
-    image: fermihdi:lab-webapp
+    image: docker.fermihdi.dev/hd-beta/lab-webapp
     build: ./webapp
     environment:
       LAB_ROUTE: "10.140.0.0/16"
@@ -22,7 +22,7 @@ services:
     depends_on:
       - redis
   redis:
-    image: fermihdi:redis
+    image: docker.fermihdi.dev/hd-beta/redis
     build: ./redis
     volumes:
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
@@ -35,7 +35,7 @@ services:
       LAB_ROUTE: "10.140.0.0/16"
       LAB_ROUTE_VIA: "10.140.140.2"
   load_master:
-    image: fermihdi:locust
+    image: docker.fermihdi.dev/hd-beta/locust
     build: ./load
     ports:
       - "9089:8089"
@@ -56,7 +56,7 @@ services:
       LAB_ROUTE_VIA: "10.140.110.2"
     command: ["--host", "http://10.140.130.10:3000"]
   load_a:
-    image: fermihdi:locust
+    image: docker.fermihdi.dev/hd-beta/locust
     build: ./load
     volumes:
       - ./load/locust-worker.conf:/usr/src/app/locust.conf
@@ -75,7 +75,7 @@ services:
     deploy:
       replicas: 4
   load_b:
-    image: fermihdi:locust
+    image: docker.fermihdi.dev/hd-beta/locust
     build: ./load
     volumes:
       - ./load/locust-worker.conf:/usr/src/app/locust.conf

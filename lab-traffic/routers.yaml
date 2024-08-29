@@ -5,7 +5,7 @@
 
 services:
   router_a:
-    image: docker.fermihdi.dev/hd-beta/
+    image: docker.fermihdi.dev/hd-beta/lab-router
     build:
       context: ./router
       target: router
@@ -35,7 +35,7 @@ services:
     depends_on:
       - ipfix_collector
   router_b:
-    image: docker.fermihdi.dev/hd-beta/
+    image: docker.fermihdi.dev/hd-beta/lab-router
     build:
       context: ./router
       target: router
