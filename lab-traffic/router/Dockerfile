@@ -83,12 +83,9 @@ RUN apt-get update && \
 FROM gcr.io/distroless/base-debian12 AS pmacct
 # FROM ubuntu:22.04 AS pmacct
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC PATH=${PATH}:/usr/local/lib LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib:/usr/lib/x86_64-linux-gnu
-COPY --from=busybox "/bin/sh" \
-  "/bin/bash" \
-  "/bin/ls*" \
-  "/bin/cat" \
-  "/bin/"
+COPY --from=busybox "/bin/sh" "/bin/"
 COPY --from=build-pmacct "/usr/bin/ping" "/usr/bin/curl" "/usr/bin/nano" "/usr/bin/*top" "/usr/bin/"
+COPY --from=build-pmacct "/bin/bash" "/bin/ls*" "/bin/cat" "/bin/"
 COPY --from=build-pmacct "/usr/sbin/ip" "/usr/sbin/"
 COPY --from=build-pmacct "/lib64/ld-linux-x86-64.so*" "/lib64/"
 COPY --from=build-pmacct "/lib/x86_64-linux-gnu/libmaxminddb.so*" \
