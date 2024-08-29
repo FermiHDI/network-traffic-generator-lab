@@ -3,6 +3,8 @@
 # No License
 # Copyright (c) 2024
 
+FROM busybox:1.36.1-uclibc as busybox
+
 FROM ubuntu:22.04 AS build-pmacct
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC
 RUN apt-get update && \
@@ -47,7 +49,7 @@ RUN apt-get update && \
   cd /tmp/nDPI && \
   ./autogen.sh && \
   ./configure --prefix=/usr/local/ && \
-  make -j${nproc} && \
+  make && \
   make install && \
   ldconfig && \
   cd /tmp/pmacct && \
@@ -65,7 +67,7 @@ RUN apt-get update && \
     --enable-bmp-bins \
     --enable-st-bins \
     --enable-jansson && \
-  make -j${nproc} && \
+  make && \
   make install
 RUN apt-get update && \
   apt-get install -y \
@@ -78,10 +80,15 @@ RUN apt-get update && \
     tcpdump \
     nano
 
-# FROM gcr.io/distroless/base-debian12 AS pmacct
-FROM ubuntu:22.04 AS pmacct
+FROM gcr.io/distroless/base-debian12 AS pmacct
+# FROM ubuntu:22.04 AS pmacct
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC PATH=${PATH}:/usr/local/lib LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib:/usr/lib/x86_64-linux-gnu
-COPY --from=build-pmacct "/usr/bin/ping" "/usr/bin/curl" "/usr/bin/"
+COPY --from=busybox "/bin/sh" \
+  "/bin/bash" \
+  "/bin/ls*" \
+  "/bin/cat" \
+  "/bin/"
+COPY --from=build-pmacct "/usr/bin/ping" "/usr/bin/curl" "/usr/bin/nano" "/usr/bin/*top" "/usr/bin/"
 COPY --from=build-pmacct "/usr/sbin/ip" "/usr/sbin/"
 COPY --from=build-pmacct "/lib64/ld-linux-x86-64.so*" "/lib64/"
 COPY --from=build-pmacct "/lib/x86_64-linux-gnu/libmaxminddb.so*" \
@@ -167,7 +174,7 @@ RUN apt-get update && \
   cd /tmp/libyang/build && \
   cmake -D CMAKE_INSTALL_PREFIX:PATH=/usr \
     -D CMAKE_BUILD_TYPE:String="Release" .. && \
-  make -j${nproc} && \
+  make && \
   make install && \
   cd /tmp && \
   git clone https://github.com/rtrlib/rtrlib.git && \
@@ -227,7 +234,7 @@ RUN apt-get update && \
   mkdir -p /etc/frr/scripts && \
   chown frr:frr /etc/frr/scripts && \
   cd /tmp/frr && \
-  make -j${nproc} && \
+  make && \
   make install && \
   echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf && \
   rm /lib/x86_64-linux-gnu/libyang.so.2 && \
