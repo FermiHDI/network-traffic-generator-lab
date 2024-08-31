@@ -67,7 +67,7 @@ if __name__ == "__main__":
     topic_list = []
     topic_list.append(ConfigResource(resource_type='TOPIC', name='ipflow_raw', configs={"retention.ms":"60000", "local.retention.ms":"60000"}))
     topic_list.append(ConfigResource(resource_type='TOPIC', name='ipflow', configs={"retention.ms":"60000", "local.retention.ms":"60000"}))
-    admin_client.alter_configs(resources=topic_list, validate_only=False)
+    admin_client.alter_configs(config_resources=topic_list)
   except Exception as e:
     print(f"Error: {e}")
 
