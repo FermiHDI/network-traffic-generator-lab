@@ -114,9 +114,9 @@ COPY --from=build-pmacct "/lib/x86_64-linux-gnu/libmaxminddb.so*" \
 COPY --from=build-pmacct "/usr/local/bin/pmacct" "/usr/local/bin/"
 COPY --from=build-pmacct "/usr/local/sbin/" "/usr/local/sbin/"
 COPY --from=build-pmacct "/usr/local/lib/" "/usr/local/lib"
-COPY "./*.conf" "/etc/pmacct/"
-COPY "./networks_file" "/etc/pmacct/"
-COPY "./GeoLite2-City.mmdb" "/etc/GeoLite2-City.mmdb"
+# COPY "./*.conf" "/etc/pmacct/"
+# COPY "./networks_file" "/etc/pmacct/"
+# COPY "./GeoLite2-City.mmdb" "/etc/GeoLite2-City.mmdb"
 RUN apt update && apt install -y \
   nano \
   tcpdump \
@@ -165,9 +165,9 @@ COPY --from=build-pmacct "/lib/x86_64-linux-gnu/libmaxminddb.so*" \
 COPY --from=build-pmacct "/usr/local/bin/pmacct" "/usr/local/bin/"
 COPY --from=build-pmacct "/usr/local/sbin/" "/usr/local/sbin/"
 COPY --from=build-pmacct "/usr/local/lib/" "/usr/local/lib"
-COPY "./*.conf" "/etc/pmacct/"
-COPY "./networks_file" "/etc/pmacct/"
-COPY "./GeoLite2-City.mmdb" "/etc/GeoLite2-City.mmdb"
+# COPY "./*.conf" "/etc/pmacct/"
+# COPY "./networks_file" "/etc/pmacct/"
+# COPY "./GeoLite2-City.mmdb" "/etc/GeoLite2-City.mmdb"
 RUN ldconfig -l -p /lib/x86_64-linux-gnu/libselinux.so.1 && ldconfig
 ENTRYPOINT ["/usr/local/sbin/nfacctd", "-f", "/etc/pmacct/nfacctd.conf"]
 
@@ -383,11 +383,11 @@ COPY --from=build-frr "/usr/lib/frr/" "/usr/lib/frr/"
 COPY --from=build-frr "/usr/local/lib/" "/usr/local/lib"
 COPY --from=build-frr "/tmp/frr/tools/frrcommon.sh" "/usr/lib/frr/"
 COPY --from=build-frr "/usr/bin/vtysh" "/usr/bin/vtysh"
-COPY "./daemons.conf" "/etc/frr/daemons"
-COPY "./frr.conf" "/etc/frr/frr.conf"
-COPY "./pmacctd.conf" "./pmacctd.interfaces.map" "/etc/pmacct/"
-COPY "./networks_file" "/etc/pmacct/"
-COPY "./GeoLite2-City.mmdb" "/etc/GeoLite2-City.mmdb"
+# COPY "./daemons.conf" "/etc/frr/daemons"
+# COPY "./frr.conf" "/etc/frr/frr.conf"
+# COPY "./pmacctd.conf" "./pmacctd.interfaces.map" "/etc/pmacct/"
+# COPY "./networks_file" "/etc/pmacct/"
+# COPY "./GeoLite2-City.mmdb" "/etc/GeoLite2-City.mmdb"
 COPY --chmod=755 "./s6-rc.d/" "/etc/s6-overlay/s6-rc.d/"
 RUN touch /etc/frr/vtysh.conf && \
     mkdir -p /var/run/frr && \
