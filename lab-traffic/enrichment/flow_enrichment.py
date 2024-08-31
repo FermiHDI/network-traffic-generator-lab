@@ -3,7 +3,7 @@
 
 from os import getenv
 from kafka import KafkaConsumer, KafkaProducer, KafkaAdminClient
-from kafka.admin import NewTopic
+from kafka.admin import NewTopic, ConfigResource
 from json import loads, dumps
 from socket import inet_aton
 from struct import unpack
@@ -61,6 +61,12 @@ if __name__ == "__main__":
     if connected:
       break
     sleep (5)
+
+  print(f"Updating topic retention")
+  topic_list = []
+  topic_list.append(ConfigResource(resource_type='TOPIC', name='ipflow_raw', configs={"retention.ms":"60000"}, described_configs=None, error=None))
+  topic_list.append(ConfigResource(resource_type='TOPIC', name='ipflow', configs={"retention.ms":"60000"}, described_configs=None, error=None))
+  admin_client.alter_configs(resources=topic_list, validate_only=False)
 
   count = 0
 
