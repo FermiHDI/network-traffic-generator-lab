@@ -62,11 +62,14 @@ if __name__ == "__main__":
       break
     sleep (5)
 
-  print(f"Updating topic retention")
-  topic_list = []
-  topic_list.append(ConfigResource(resource_type='TOPIC', name='ipflow_raw', configs={"retention.ms":"60000"}, described_configs=None, error=None))
-  topic_list.append(ConfigResource(resource_type='TOPIC', name='ipflow', configs={"retention.ms":"60000"}, described_configs=None, error=None))
-  admin_client.alter_configs(resources=topic_list, validate_only=False)
+  try:
+    print(f"Updating topic retention")
+    topic_list = []
+    topic_list.append(ConfigResource(resource_type='TOPIC', name='ipflow_raw', configs={"retention.ms":"60000"}))
+    topic_list.append(ConfigResource(resource_type='TOPIC', name='ipflow', configs={"retention.ms":"60000"}))
+    admin_client.alter_configs(resources=topic_list, validate_only=False)
+  except Exception as e:
+    print(f"Error: {e}")
 
   count = 0
 
