@@ -113,7 +113,7 @@ if __name__ == "__main__":
 
     count += 1
 
-    if count % 100000 == 0:
+    if count % 1000000 == 0:
       print(f"Message {count} sent")
       print(f"Input Kafka Metrics: {consumer.metrics()}")
       print(f"Output Kafka Metrics: {producer.metrics()}")
