@@ -10,5 +10,6 @@ RUN apt update -y && \
     pip install git+https://github.com/dpkp/kafka-python.git
 
 ADD --chmod=0777 flow_enrichment.py .
+ADD networks.json .
 
 CMD ["python", "-u", "./flow_enrichment.py"]

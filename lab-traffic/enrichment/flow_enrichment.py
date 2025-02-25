@@ -21,12 +21,30 @@ if __name__ == "__main__":
   output_bootstrap_port = getenv("KAFKA_OUTPUT_BOOTSTRAP_PORT", "9092")
   input_bootstrap = input_bootstrap_server + ":" + input_bootstrap_port
   output_bootstrap = output_bootstrap_server + ":" + output_bootstrap_port
+  
+  # Load networks
+  fibish = []
+  with open("networks.json", "r") as f:
+    nets_ = loads(f.read())
+    nets = sorted(nets_, key=lambda x: x["mask"])
+    
+    for net in nets:
+      # IPv4 Only
+      m = 32 - net["mask"]
+      mask = 4294967296 >> m << m 
+      network = unpack("!L", inet_aton(str(net["network"])))[0]
+      asn = net["as"]
+      fibish.append({
+        "mask": mask,
+        "network": network,
+        "asn": asn,
+      })
 
   timeout = time() + 300  # 5 Mins
   while time() < timeout:
     print("Checking Kafka broker")
     connected = False
-    # Check input kafka cluser for topic
+    # Check input kafka cluster for topic
     try:
       print(f"Checking if input topic {input_topic} exists")
       consumer = KafkaConsumer(bootstrap_servers=[input_bootstrap],
@@ -42,7 +60,7 @@ if __name__ == "__main__":
         print(f"Input topic {input_topic} found")
       connected = True
 
-      # Check output kafka cluser for topic
+      # Check output kafka cluster for topic
       print(f"Checking if output topic {output_topic} exists")
       producer = KafkaProducer(bootstrap_servers=[output_bootstrap])
       existing_topics = consumer.topics()
@@ -89,15 +107,28 @@ if __name__ == "__main__":
       port_num = 17
 
     timestamp = int(rx_msg["timestamp_start"].split(".")[0])
+    
+    ip_src = unpack("!L", inet_aton(str(rx_msg["ip_src"])))[0]
+    as_src = 0
+    for net in fibish:
+      if ip_src & net["mask"] ^ net["network"] == 0:
+        as_src = net["asn"]
+        break
+      
+    ip_dst = unpack("!L", inet_aton(str(rx_msg["ip_dst"])))[0]
+    for net in fibish:
+      if ip_dst & net["mask"] ^ net["network"] == 0:
+        as_dst = net["asn"]
+        break
 
     tx_msg = {
       "peer_ip_src": unpack("!L", inet_aton(str(rx_msg["peer_ip_src"])))[0],
       "iface_in": int(rx_msg["iface_in"]),
       "iface_out": int(rx_msg["iface_out"]),
-      "as_src": int(rx_msg["as_src"]),
-      "as_dst": int(rx_msg["as_dst"]),
-      "ip_src": unpack("!L", inet_aton(str(rx_msg["ip_src"])))[0],
-      "ip_dst": unpack("!L", inet_aton(str(rx_msg["ip_dst"])))[0],
+      "as_src": as_src,
+      "as_dst": as_dst,
+      "ip_src": ip_src,
+      "ip_dst": ip_dst,
       "port_src": int(rx_msg["port_src"]),
       "port_dst": int(rx_msg["port_dst"]),
       "tcp_flags": int(rx_msg["tcp_flags"]),
