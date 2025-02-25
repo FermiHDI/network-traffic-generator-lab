@@ -25,7 +25,7 @@ if __name__ == "__main__":
   # Load networks
   fibish = []
   with open("networks.json", "r") as f:
-    nets_ = loads(f.read())
+    nets_ = loads(f.read())["networks"]
     nets = sorted(nets_, key=lambda x: x["mask"])
     
     for net in nets:
