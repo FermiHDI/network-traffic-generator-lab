@@ -31,7 +31,7 @@ if __name__ == "__main__":
     for net in nets:
       # IPv4 Only
       m = 32 - net["mask"]
-      mask = 4294967296 >> m << m 
+      mask = int('ffffffff', 16) >> m << m
       network = unpack("!L", inet_aton(str(net["network"])))[0]
       asn = net["as"]
       fibish.append({
@@ -85,7 +85,9 @@ if __name__ == "__main__":
     topic_list = []
     topic_list.append(ConfigResource(resource_type='TOPIC', name='ipflow_raw', configs={"retention.ms":"60000", "local.retention.ms":"60000"}))
     topic_list.append(ConfigResource(resource_type='TOPIC', name='ipflow', configs={"retention.ms":"60000", "local.retention.ms":"60000"}))
-    admin_client.alter_configs(config_resources=topic_list)
+    if input_topic not in existing_topics or output_topic not in existing_topics:
+      admin_client.alter_configs(config_resources=topic_list)
+
   except Exception as e:
     print(f"Error: {e}")
 
@@ -116,6 +118,7 @@ if __name__ == "__main__":
         break
       
     ip_dst = unpack("!L", inet_aton(str(rx_msg["ip_dst"])))[0]
+    as_dst = 0
     for net in fibish:
       if ip_dst & net["mask"] ^ net["network"] == 0:
         as_dst = net["asn"]
