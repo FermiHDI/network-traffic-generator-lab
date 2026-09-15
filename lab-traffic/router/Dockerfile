@@ -122,6 +122,11 @@ RUN apt update && apt install -y \
   tcpdump \
   iputils-ping
 ENTRYPOINT ["/usr/local/sbin/nfacctd", "-f", "/etc/pmacct/nfacctd.conf"]
+ARG GIT_COMMIT=unknown
+ARG GIT_BRANCH=unknown
+LABEL org.opencontainers.image.source="https://github.com/FermiHDI/network-traffic-generator-lab" \
+      org.opencontainers.image.revision="${GIT_COMMIT}" \
+      com.fermihdi.git.branch="${GIT_BRANCH}"
 
 FROM gcr.io/distroless/base-debian12 AS pmacct
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC PATH=${PATH}:/usr/local/lib LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib:/usr/lib/x86_64-linux-gnu
@@ -170,8 +175,13 @@ COPY --from=build-pmacct "/usr/local/lib/" "/usr/local/lib"
 # COPY "./GeoLite2-City.mmdb" "/etc/GeoLite2-City.mmdb"
 RUN ldconfig -l -p /lib/x86_64-linux-gnu/libselinux.so.1 && ldconfig
 ENTRYPOINT ["/usr/local/sbin/nfacctd", "-f", "/etc/pmacct/nfacctd.conf"]
+ARG GIT_COMMIT=unknown
+ARG GIT_BRANCH=unknown
+LABEL org.opencontainers.image.source="https://github.com/FermiHDI/network-traffic-generator-lab" \
+      org.opencontainers.image.revision="${GIT_COMMIT}" \
+      com.fermihdi.git.branch="${GIT_BRANCH}"
 
-FROM ubuntu:22.04 AS build-frr                                                                                          
+FROM ubuntu:22.04 AS build-frr
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC
 ENV S6_OVERLAY_VERSION=3.1.4.1
 RUN apt-get update && \
@@ -397,3 +407,8 @@ RUN touch /etc/frr/vtysh.conf && \
 HEALTHCHECK CMD vtysh -c "show watchfrr" || exit 1
 ENTRYPOINT ["/init", "/usr/lib/frr/watchfrr", "zebra", "mgmtd", "staticd"]
 CMD ["bgpd"]
+ARG GIT_COMMIT=unknown
+ARG GIT_BRANCH=unknown
+LABEL org.opencontainers.image.source="https://github.com/FermiHDI/network-traffic-generator-lab" \
+      org.opencontainers.image.revision="${GIT_COMMIT}" \
+      com.fermihdi.git.branch="${GIT_BRANCH}"
