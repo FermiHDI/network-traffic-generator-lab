@@ -7,3 +7,8 @@ COPY app.js /usr/src/app/app.js
 COPY public/ /usr/src/app/public/
 RUN npm install
 ENTRYPOINT ["/docker-start.sh"]
+ARG GIT_COMMIT=unknown
+ARG GIT_BRANCH=unknown
+LABEL org.opencontainers.image.source="https://github.com/FermiHDI/network-traffic-generator-lab" \
+      org.opencontainers.image.revision="${GIT_COMMIT}" \
+      com.fermihdi.git.branch="${GIT_BRANCH}"
