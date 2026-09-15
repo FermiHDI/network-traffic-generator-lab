@@ -6,14 +6,17 @@
     "collaborators": [
         "Craig Yamato <craig@fermihdi.dev> (https://linkedin.com/in/cyamato)"
     ],
-    "license":"ISC",
+    "license": "ISC",
     "funding": "https://fermihdi.dev/opensource/donate",
     "scripts": {
         "start": "node app.js"
     },
-    "dependencies":{
-        "fastify":"4.26.2",
-        "@fastify/static":"7.0.1",
-        "@fastify/redis":"6.1.1"
+    "dependencies": {
+        "fastify": "5.12.4",
+        "@fastify/static": "10.1.3",
+        "@fastify/redis": "9.0.0"
+    },
+    "engines": {
+        "node": ">=20"
     }
 }

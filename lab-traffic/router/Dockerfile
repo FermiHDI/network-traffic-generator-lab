@@ -42,8 +42,15 @@ RUN apt-get update && \
     libavro-dev \
     libbpf-dev \
     libc-ares-dev
+# The installer is fetched at a pinned commit and checked against its SHA-256
+# before it runs, instead of piping whatever main serves into a shell.
+ARG MDT_INSTALLER_COMMIT=7c79bed58e9c8bb4269fb11d738ad5cb1babecf4
+ARG MDT_INSTALLER_SHA256=9f14c5d0e2c5b411d401b1866c8dd8a07518a31f89bc8e8317067d49183dde59
 RUN cd /tmp && \
-  /bin/sh -c "$(curl -fsSL https://github.com/network-analytics/mdt-dialout-collector/raw/main/install.sh)" -- -l -v "v1.1.4"
+  curl -fsSLo mdt-install.sh "https://raw.githubusercontent.com/network-analytics/mdt-dialout-collector/${MDT_INSTALLER_COMMIT}/install.sh" && \
+  echo "${MDT_INSTALLER_SHA256}  mdt-install.sh" | sha256sum -c - && \
+  /bin/sh mdt-install.sh -l -v "v1.1.4" && \
+  rm -f mdt-install.sh
 RUN cd /tmp && \
   git clone -b 4.6-stable https://github.com/ntop/nDPI.git && \
   git clone -b 1.7.9 --depth 1 https://github.com/pmacct/pmacct.git
