@@ -3,10 +3,10 @@
 # No License
 # Copyright (c) 2024
 
-FROM busybox:1.36.1-uclibc AS busybox
+FROM busybox:1.36.1-uclibc@sha256:0872fb3a7632ba9d0ae46a8e832a62b30ce83a6f220b8bb52903d9cf477dabe3 AS busybox
 FROM docker.fermihdi.dev/dev/pmacct AS build-pmacct
 
-FROM ubuntu:22.04 AS build-pmacct-img
+FROM ubuntu:22.04@sha256:f64b2ffc2f10ab8f8505aa56b2664bd846cbb9df87c7e2532e30f7667021c0e6 AS build-pmacct-img
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC
 RUN apt-get update && \
     apt-get install -y \
@@ -88,7 +88,7 @@ RUN apt-get update && \
     tcpdump \
     nano
 
-FROM ubuntu:22.04 AS pmacct-ubuntu
+FROM ubuntu:22.04@sha256:f64b2ffc2f10ab8f8505aa56b2664bd846cbb9df87c7e2532e30f7667021c0e6 AS pmacct-ubuntu
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC PATH=${PATH}:/usr/local/lib LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib:/usr/lib/x86_64-linux-gnu
 COPY --from=build-pmacct "/lib/x86_64-linux-gnu/libmaxminddb.so*" \
   "/lib/x86_64-linux-gnu/libavro.so*" \
@@ -130,7 +130,7 @@ RUN apt update && apt install -y \
   iputils-ping
 ENTRYPOINT ["/usr/local/sbin/nfacctd", "-f", "/etc/pmacct/nfacctd.conf"]
 
-FROM gcr.io/distroless/base-debian12 AS pmacct
+FROM gcr.io/distroless/base-debian12:latest@sha256:fabbf1c0c357a3d42550111351daed089b20a2c954df13ee2fcff60602515e84 AS pmacct
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC PATH=${PATH}:/usr/local/lib LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib:/usr/lib/x86_64-linux-gnu
 COPY --from=busybox "/bin/sh" "/bin/"
 COPY --from=build-pmacct "/lib/x86_64-linux-gnu/libselinux.so.1" "/lib/x86_64-linux-gnu/"
@@ -178,7 +178,7 @@ COPY --from=build-pmacct "/usr/local/lib/" "/usr/local/lib"
 RUN ldconfig -l -p /lib/x86_64-linux-gnu/libselinux.so.1 && ldconfig
 ENTRYPOINT ["/usr/local/sbin/nfacctd", "-f", "/etc/pmacct/nfacctd.conf"]
 
-FROM ubuntu:22.04 AS build-frr                                                                                          
+FROM ubuntu:22.04@sha256:f64b2ffc2f10ab8f8505aa56b2664bd846cbb9df87c7e2532e30f7667021c0e6 AS build-frr                                                                                          
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC
 ENV S6_OVERLAY_VERSION=3.1.4.1
 RUN apt-get update && \
@@ -305,7 +305,7 @@ RUN mkdir /tmp/rootfs && \
   tar -Jxpf /tmp/s6-overlay-symlinks-noarch.tar.xz -C /tmp/rootfs
 
 # FROM gcr.io/distroless/base-debian12 AS router
-FROM ubuntu:22.04 AS router
+FROM ubuntu:22.04@sha256:f64b2ffc2f10ab8f8505aa56b2664bd846cbb9df87c7e2532e30f7667021c0e6 AS router
 ENV TZ=Etc/UTC PATH=${PATH}:/usr/local/lib:/command LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib:/usr/lib/x86_64-linux-gnu
 COPY --from=build-pmacct "/usr/bin/ping" "/usr/bin/curl" "/usr/bin/"
 COPY --from=build-pmacct "/usr/sbin/ip" "/usr/sbin/"
